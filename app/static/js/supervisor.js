@@ -14,8 +14,8 @@
       var k = p.kpis;
       var cls = k.total_pedido <= 0 ? "i" : k.cumple_objetivo ? "g" : "w";
       var txt = k.total_pedido <= 0 ? "sin abrir" : k.pct_cumplimiento + " %";
-      var alerta = (!k.cumple_objetivo && k.total_pedido > 0) ? ' class="fila-alerta"' : "";
-      return "<tr" + alerta + ">" +
+      var alerta = (!k.cumple_objetivo && k.total_pedido > 0) ? " fila-alerta" : "";
+      return "<tr class='fila-link" + alerta + "' onclick=\"location.href='/supervisor/puesto/" + p.id + "'\">" +
         "<td class='mono'>" + String(p.numero).padStart(2, "0") + "</td>" +
         "<td>" + (p.ocupado_por ? esc(p.ocupado_por) : "<span class='muted'>libre</span>") + "</td>" +
         "<td><div class='barcell'><div class='bt'><i style='width:" + Math.min(k.pct_cumplimiento, 100) + "%'></i></div>" +

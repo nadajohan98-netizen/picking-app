@@ -46,16 +46,19 @@ app/
   templating.py      objeto Jinja2Templates compartido
   routers/
     auth.py          /login /logout /inicio (redirige según rol)
-    puestos.py       /puestos + WebSocket /ws/puestos
+    puestos.py       /puestos (solo puestos activos) + WebSocket /ws/puestos
     picking.py       /picking/{id} + API de la grilla (lineas, pesos, kpis, lotes, config)
-    admin.py         /admin/* (config, lotes, asignaciones, usuarios) — solo rol admin
-    supervisor.py    /supervisor + /api/supervisor/resumen
+    admin.py         /admin, /admin/config, /admin/usuarios (crear/editar/toggle/reset)
+    catalogos.py     /admin/{lotes,materiales,almacenes,puestos,asignaciones} — CRUD
+    supervisor.py    /supervisor, /api/supervisor/resumen,
+                     /supervisor/puesto/{id} (solo lectura), /supervisor/cierre (imprimible)
   services/
     configuracion.py  fila única de Configuracion, con caché en memoria
     kpis.py           calcula la barra de KPIs a partir de las líneas
     vencimiento.py    valida y clasifica (ok/pronto/vencido) la fecha
     locks.py          PuestoLockManager: candado en memoria + rastro en SesionPuesto
-    lotes_import.py   lee .xlsx/.csv de lotes que sube el admin
+    tabla_import.py   lee .xlsx/.csv a lista de dicts por encabezado
+    lotes_import.py / materiales_import.py   usan tabla_import
   templates/         base.html -> app.html -> páginas
   static/            css/app.css (tokens de tema), js/*.js, vendor/tabulator.*
 manage.py            utilidades de BD (dev)
@@ -84,6 +87,14 @@ run.py               arranca uvicorn con --reload
   `SesionPuesto` colgadas.
 - **Puestos** se muestran como "01, 02, 03…" sin región (`Puesto.descripcion`
   existe en el modelo pero no se usa).
+- `Puesto`, `Almacen`, `Material` tienen `activo`. Un puesto/almacén inactivo no
+  aparece para elegir/asignar; los materiales inactivos sí siguen en líneas
+  históricas (el flag es informativo + para el futuro "crear pedido").
+- **Roles:** el admin siempre pasa `require_roles` (ve todo). El supervisor ve el
+  panel + detalle de puestos en solo lectura + el cierre imprimible; NO toca
+  catálogos, usuarios ni configuración. El operario solo su puesto.
+- Al **editar un usuario**, cambiar la cédula reinicia su contraseña a la nueva
+  cédula (si no, el hash de la vieja quedaría mal).
 - Autoguardado en cada cambio: no hay botón "guardar" en la grilla.
 - Trazabilidad automática: cada escritura guarda `editado_por_id` + `actualizado_en`.
 

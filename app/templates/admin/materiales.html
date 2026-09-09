@@ -1,0 +1,67 @@
+{% extends "app.html" %}
+{% block title %}Materiales{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block topctx %}<span class="ctx">·</span><a href="/admin" class="crumb">Administración</a><span class="ctx">/</span><span class="ctx">Materiales</span>{% endblock %}
+
+{% block appmain %}
+<div class="wrap-wide">
+  <div class="page-head" style="padding:0 0 12px">
+    <div class="titles"><h1>Materiales / productos</h1><div class="sub">{{ materiales|length }} en el catálogo</div></div>
+  </div>
+  {% if msg %}<p class="ok">{{ msg }}</p>{% endif %}
+
+  <form method="post" action="/admin/materiales/crear" class="row-form">
+    <div class="fld"><label class="lbl">Código</label><input name="codigo" required></div>
+    <div class="fld"><label class="lbl">Descripción</label><input name="descripcion" required style="min-width:240px"></div>
+    <div class="fld"><label class="lbl">Unidad</label>
+      <select name="tipo_unidad">{% for u in unidades %}<option value="{{ u.value }}">{{ u.value }}</option>{% endfor %}</select>
+    </div>
+    <button class="btn primary" type="submit">Agregar</button>
+  </form>
+
+  <form method="post" action="/admin/materiales/cargar" enctype="multipart/form-data" class="row-form">
+    <div class="fld">
+      <label class="lbl">Carga masiva (.xlsx o .csv)</label>
+      <input type="file" name="archivo" accept=".xlsx,.csv" required>
+    </div>
+    <button class="btn" type="submit">Cargar archivo</button>
+  </form>
+  <p class="muted small">Columnas: <code>codigo</code>, <code>descripcion</code>, <code>unidad</code> (UN/KG). Los que ya existan se actualizan.</p>
+
+  <div class="cat-toolbar">
+    <span class="search"><input id="cat-buscar" placeholder="Buscar material…" autocomplete="off"></span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="tbl">
+      <thead><tr><th>Código</th><th>Descripción</th><th>Unidad</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for m in materiales %}
+        <tr class="{{ '' if m.activo else 'fila-inactiva' }}" data-buscar="{{ m.codigo }} {{ m.descripcion }}">
+          <td class="mono">{{ m.codigo }}</td>
+          <td class="row-view">{{ m.descripcion }}</td>
+          <td class="row-view"><span class="tag-un">{{ m.tipo_unidad.value }}</span></td>
+          <td class="row-view">{{ "Activo" if m.activo else "Inactivo" }}</td>
+          <td class="row-view row-actions">
+            <button class="btn ghost sm" type="button" data-edit-row>Editar</button>
+            <form method="post" action="/admin/materiales/{{ m.id }}/toggle"><button class="btn ghost sm" type="submit">{{ "Desactivar" if m.activo else "Activar" }}</button></form>
+          </td>
+          <td class="row-edit" colspan="4">
+            <form method="post" action="/admin/materiales/{{ m.id }}/editar">
+              <input name="descripcion" value="{{ m.descripcion }}" required style="min-width:260px">
+              <select name="tipo_unidad">{% for u in unidades %}<option value="{{ u.value }}" {{ "selected" if u == m.tipo_unidad else "" }}>{{ u.value }}</option>{% endfor %}</select>
+              <button class="btn primary sm" type="submit">Guardar</button>
+              <button class="btn ghost sm" type="button" data-cancel-row>Cancelar</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5"><div class="empty-state"><div class="es-title">Sin materiales</div>Agregá uno arriba o subí un archivo.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', path='js/catalogos.js') }}"></script>{% endblock %}

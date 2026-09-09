@@ -61,7 +61,8 @@ class Usuario(SQLModel, table=True):
 class Puesto(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     numero: int = Field(unique=True, index=True)     # el número visible del puesto
-    descripcion: str | None = None                   # "Bogotá", "Satélites", "Cali"...
+    descripcion: str | None = None                   # sin uso por ahora
+    activo: bool = Field(default=True)               # un puesto inactivo no aparece para elegir
 
 
 # ---------------------------------------------------------------------------
@@ -71,6 +72,7 @@ class Almacen(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     codigo: str = Field(unique=True, index=True)     # "091"
     nombre: str                                      # "Éxito Occidente"
+    activo: bool = Field(default=True)
 
 
 # ---------------------------------------------------------------------------
@@ -110,6 +112,7 @@ class Material(SQLModel, table=True):
     codigo: str = Field(unique=True, index=True)
     descripcion: str
     tipo_unidad: TipoUnidad
+    activo: bool = Field(default=True)
 
 
 # ---------------------------------------------------------------------------

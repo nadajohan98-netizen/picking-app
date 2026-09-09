@@ -14,7 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.routers import admin, auth, picking, puestos, supervisor
+from app.routers import admin, auth, catalogos, picking, puestos, supervisor
 from app.security import get_secret_key
 from app.services.locks import cerrar_todas_las_sesiones
 from app.templating import templates
@@ -43,6 +43,7 @@ app.include_router(auth.router)
 app.include_router(puestos.router)
 app.include_router(picking.router)
 app.include_router(admin.router)
+app.include_router(catalogos.router)
 app.include_router(supervisor.router)
 
 

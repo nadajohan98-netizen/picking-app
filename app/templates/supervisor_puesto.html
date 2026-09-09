@@ -1,0 +1,61 @@
+{% extends "app.html" %}
+{% block title %}Puesto {{ "%02d"|format(puesto.numero) }} — Detalle{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block topctx %}<span class="ctx">·</span><a href="/supervisor" class="crumb">Supervisión</a><span class="ctx">/</span><span class="ctx">Puesto {{ "%02d"|format(puesto.numero) }}</span>{% endblock %}
+
+{% block appmain %}
+<div class="wrap-wide">
+  <div class="page-head" style="padding:0 0 12px">
+    <div class="titles">
+      <h1>Puesto {{ "%02d"|format(puesto.numero) }} <span class="muted small">· {{ hoy }}</span></h1>
+      <div class="sub">{% if ocupado_por %}Lo está trabajando <strong>{{ ocupado_por }}</strong>{% else %}Nadie lo tiene abierto ahora{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="ro-banner">Vista de solo lectura. Como supervisor podés ver el detalle pero no editarlo.</div>
+
+  <div class="kpibar" style="margin:0 0 14px; border-radius:8px; border-bottom:1px solid var(--grid-strong)">
+    <div class="kpi"><div class="kl">Total pedido</div><div class="kv">{{ kpis.total_pedido }}</div></div>
+    <div class="kpi"><div class="kl">Total despachado</div><div class="kv">{{ kpis.total_despachado }}</div></div>
+    <div class="kpi {{ 'good' if kpis.cumple_objetivo else 'bad' }}"><div class="kl">% Cumplimiento</div><div class="kv">{{ kpis.pct_cumplimiento }} %</div></div>
+    <div class="kpi"><div class="kl">% Faltante</div><div class="kv">{{ kpis.pct_faltante }} %</div></div>
+    <div class="kpi"><div class="kl">Total unidades</div><div class="kv">{{ kpis.total_unidades }}</div></div>
+    <div class="kpi {{ 'bad' if kpis.total_pendiente < 0 else '' }}"><div class="kl">Total pendiente</div><div class="kv">{{ kpis.total_pendiente }}</div></div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="tbl">
+      <thead><tr>
+        <th>Almacén</th><th>Material</th><th>Un</th>
+        <th class="r">Pedido</th><th class="r">Desp.</th><th>Canastillas</th>
+        <th>Lote</th><th>Vence</th><th class="r">Dif</th><th>Editó</th><th>Hora</th>
+      </tr></thead>
+      <tbody>
+        {% for l in lineas %}
+        <tr>
+          <td>{{ l.almacen }}</td>
+          <td>{{ l.material }}</td>
+          <td><span class="tag-un">{{ l.unidad }}</span></td>
+          <td class="r mono">{{ "%.3f"|format(l.pedida) if l.es_kg else l.pedida|int }}</td>
+          <td class="r mono"><strong>{{ "%.3f"|format(l.despachada) if l.es_kg else l.despachada|int }}</strong></td>
+          <td>
+            {% if l.pesos %}<div class="pesos-inline">{% for p in l.pesos %}<span>{{ "%.3f"|format(p) }}</span>{% endfor %}</div>
+            {% elif not l.es_kg %}<span class="muted small">{{ l.canastillas or "—" }}</span>
+            {% else %}<span class="muted small">—</span>{% endif %}
+          </td>
+          <td class="mono">{{ l.lote or "—" }}</td>
+          <td class="mono venc-txt {{ l.vencimiento_estado }}">{{ l.vencimiento or "—" }}</td>
+          <td class="r mono {{ 'dif-neg' if l.diferencia < 0 else ('dif-zero' if l.diferencia == 0 else '') }}">
+            {{ ("+" ~ "%.3f"|format(-l.diferencia)) if l.diferencia < 0 else ("0" if l.diferencia == 0 else ("%.3f"|format(l.diferencia) if l.es_kg else l.diferencia|int)) }}
+          </td>
+          <td class="small">{{ l.editado_por or "—" }}</td>
+          <td class="small mono">{{ l.actualizado_en if l.editado_por else "" }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="11"><div class="empty-state">Este puesto no tiene líneas para hoy.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

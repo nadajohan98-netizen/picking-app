@@ -27,7 +27,9 @@ def pantalla_puestos(
     user: Usuario = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
-    puestos = session.exec(select(Puesto).order_by(Puesto.numero)).all()
+    puestos = session.exec(
+        select(Puesto).where(Puesto.activo == True).order_by(Puesto.numero)  # noqa: E712
+    ).all()
     return templates.TemplateResponse(
         request,
         "puestos.html",

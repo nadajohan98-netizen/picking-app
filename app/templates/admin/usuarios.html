@@ -22,20 +22,35 @@
 
   <div class="table-wrap" style="margin-top:12px">
     <table class="tbl">
-      <thead><tr><th>Usuario</th><th>Cédula</th><th>Rol</th><th>Estado</th><th colspan="2"></th></tr></thead>
+      <thead><tr><th>Usuario</th><th>Cédula</th><th>Rol</th><th>Estado</th><th></th></tr></thead>
       <tbody>
         {% for u in usuarios %}
         <tr class="{{ '' if u.activo else 'fila-inactiva' }}">
           <td class="mono">{{ u.username }}</td>
-          <td>{{ u.cedula }}</td>
-          <td>{{ u.rol.value }}</td>
-          <td>{{ "Activo" if u.activo else "Inactivo" }}</td>
-          <td><form method="post" action="/admin/usuarios/{{ u.id }}/toggle"><button class="btn ghost sm" type="submit" {{ "disabled" if u.id == user.id else "" }}>{{ "Desactivar" if u.activo else "Activar" }}</button></form></td>
-          <td><form method="post" action="/admin/usuarios/{{ u.id }}/reset"><button class="btn ghost sm" type="submit">Reiniciar contraseña</button></form></td>
+          <td class="row-view">{{ u.cedula }}</td>
+          <td class="row-view">{{ u.rol.value }}</td>
+          <td class="row-view">{{ "Activo" if u.activo else "Inactivo" }}</td>
+          <td class="row-view row-actions">
+            <button class="btn ghost sm" type="button" data-edit-row>Editar</button>
+            <form method="post" action="/admin/usuarios/{{ u.id }}/toggle"><button class="btn ghost sm" type="submit" {{ "disabled" if u.id == user.id else "" }}>{{ "Desactivar" if u.activo else "Activar" }}</button></form>
+            <form method="post" action="/admin/usuarios/{{ u.id }}/reset"><button class="btn ghost sm" type="submit">Reiniciar contraseña</button></form>
+          </td>
+          <td class="row-edit" colspan="4">
+            <form method="post" action="/admin/usuarios/{{ u.id }}/editar">
+              <input name="cedula" value="{{ u.cedula }}" required>
+              <select name="rol">{% for r in roles %}<option value="{{ r.value }}" {{ "selected" if r == u.rol else "" }}>{{ r.value }}</option>{% endfor %}</select>
+              <label class="small" style="display:flex;gap:4px;align-items:center;text-transform:none;letter-spacing:0"><input type="checkbox" name="reiniciar" value="1"> reiniciar contraseña</label>
+              <button class="btn primary sm" type="submit">Guardar</button>
+              <button class="btn ghost sm" type="button" data-cancel-row>Cancelar</button>
+            </form>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+  <p class="muted small">Al cambiar la cédula, la contraseña se reinicia a la nueva cédula automáticamente.</p>
 </div>
 {% endblock %}
+
+{% block scripts %}<script src="{{ url_for('static', path='js/catalogos.js') }}"></script>{% endblock %}

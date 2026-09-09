@@ -1,36 +1,22 @@
 """
-Panel de administrador (Fase 5):
+Panel de administrador: índice, configuración y usuarios.
 
-- /admin                      -> índice con accesos
-- /admin/lotes                -> catálogo de lotes + carga por archivo
-- /admin/asignaciones         -> qué almacenes le tocan a cada puesto por día
-- /admin/usuarios             -> alta / baja / reinicio de contraseña
+Los catálogos (lotes, materiales, almacenes, puestos, asignaciones) están en
+`app/routers/catalogos.py`.
 """
 
-from datetime import date
-
-from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
+from fastapi import APIRouter, Depends, Form, Request, status
 from fastapi.responses import RedirectResponse
 from sqlmodel import Session, select
 
 from app.auth import require_roles
 from app.database import get_session
-from app.models import (
-    Almacen,
-    AsignacionDiaria,
-    Lote,
-    Puesto,
-    Rol,
-    Usuario,
-)
+from app.models import Rol, Usuario
 from app.security import hash_password
 from app.services.configuracion import actualizar_config, get_config
-from app.services.lotes_import import extraer_codigos
 from app.templating import templates
 
 router = APIRouter(prefix="/admin")
-
-# Todas las rutas de este router exigen rol administrador.
 solo_admin = Depends(require_roles(Rol.administrador))
 
 
@@ -82,138 +68,6 @@ async def guardar_config(request: Request, user: Usuario = solo_admin):
 
 
 # ---------------------------------------------------------------------------
-# Catálogo de lotes
-# ---------------------------------------------------------------------------
-@router.get("/lotes")
-def ver_lotes(
-    request: Request,
-    user: Usuario = solo_admin,
-    session: Session = Depends(get_session),
-    msg: str | None = None,
-):
-    lotes = session.exec(select(Lote).order_by(Lote.codigo)).all()
-    return templates.TemplateResponse(
-        request, "admin/lotes.html", {"user": user, "lotes": lotes, "msg": msg}
-    )
-
-
-@router.post("/lotes/cargar")
-async def cargar_lotes(
-    user: Usuario = solo_admin,
-    session: Session = Depends(get_session),
-    archivo: UploadFile = File(...),
-):
-    contenido = await archivo.read()
-    try:
-        codigos = extraer_codigos(archivo.filename or "", contenido)
-    except ValueError as e:
-        return _redir_lotes(str(e))
-
-    existentes = {l.codigo for l in session.exec(select(Lote)).all()}
-    nuevos = 0
-    for codigo in codigos:
-        if codigo not in existentes:
-            session.add(Lote(codigo=codigo))
-            existentes.add(codigo)
-            nuevos += 1
-    session.commit()
-    return _redir_lotes(
-        f"Archivo leído: {len(codigos)} códigos, {nuevos} nuevos agregados."
-    )
-
-
-@router.post("/lotes/{lote_id}/toggle")
-def toggle_lote(
-    lote_id: int,
-    user: Usuario = solo_admin,
-    session: Session = Depends(get_session),
-):
-    lote = session.get(Lote, lote_id)
-    if lote:
-        lote.activo = not lote.activo
-        session.add(lote)
-        session.commit()
-    return _redir_lotes()
-
-
-def _redir_lotes(msg: str | None = None) -> RedirectResponse:
-    url = "/admin/lotes" + (f"?msg={msg}" if msg else "")
-    return RedirectResponse(url, status_code=status.HTTP_303_SEE_OTHER)
-
-
-# ---------------------------------------------------------------------------
-# Asignación diaria puesto <-> almacenes
-# ---------------------------------------------------------------------------
-@router.get("/asignaciones")
-def ver_asignaciones(
-    request: Request,
-    user: Usuario = solo_admin,
-    session: Session = Depends(get_session),
-    fecha: str | None = None,
-):
-    dia = date.fromisoformat(fecha) if fecha else date.today()
-    puestos = session.exec(select(Puesto).order_by(Puesto.numero)).all()
-    almacenes = session.exec(select(Almacen).order_by(Almacen.codigo)).all()
-
-    asignaciones = session.exec(
-        select(AsignacionDiaria).where(AsignacionDiaria.fecha == dia)
-    ).all()
-    # {puesto_id: {almacen_id, ...}}
-    actuales: dict[int, set[int]] = {}
-    for a in asignaciones:
-        actuales.setdefault(a.puesto_id, set()).add(a.almacen_id)
-
-    return templates.TemplateResponse(
-        request,
-        "admin/asignaciones.html",
-        {
-            "user": user,
-            "fecha": dia.isoformat(),
-            "puestos": puestos,
-            "almacenes": almacenes,
-            "actuales": actuales,
-        },
-    )
-
-
-@router.post("/asignaciones/guardar")
-async def guardar_asignaciones(
-    request: Request,
-    user: Usuario = solo_admin,
-    session: Session = Depends(get_session),
-):
-    form = await request.form()
-    dia = date.fromisoformat(str(form["fecha"]))
-
-    # Los checkboxes marcados llegan como "asg-<puesto_id>-<almacen_id>".
-    marcados: set[tuple[int, int]] = set()
-    for clave in form.keys():
-        if clave.startswith("asg-"):
-            _, p, a = clave.split("-")
-            marcados.add((int(p), int(a)))
-
-    existentes = session.exec(
-        select(AsignacionDiaria).where(AsignacionDiaria.fecha == dia)
-    ).all()
-    existentes_set = {(e.puesto_id, e.almacen_id): e for e in existentes}
-
-    # Borrar las que se desmarcaron.
-    for clave, obj in existentes_set.items():
-        if clave not in marcados:
-            session.delete(obj)
-    # Crear las nuevas.
-    for (p, a) in marcados:
-        if (p, a) not in existentes_set:
-            session.add(AsignacionDiaria(fecha=dia, puesto_id=p, almacen_id=a))
-    session.commit()
-
-    return RedirectResponse(
-        f"/admin/asignaciones?fecha={dia.isoformat()}",
-        status_code=status.HTTP_303_SEE_OTHER,
-    )
-
-
-# ---------------------------------------------------------------------------
 # Usuarios
 # ---------------------------------------------------------------------------
 @router.get("/usuarios")
@@ -252,6 +106,30 @@ def crear_usuario(
     )
     session.commit()
     return _redir_usuarios(f"Usuario '{username}' creado (contraseña = cédula).")
+
+
+@router.post("/usuarios/{usuario_id}/editar")
+def editar_usuario(
+    usuario_id: int,
+    actor: Usuario = solo_admin,
+    session: Session = Depends(get_session),
+    cedula: str = Form(...),
+    rol: Rol = Form(...),
+    reiniciar: str | None = Form(None),
+):
+    u = session.get(Usuario, usuario_id)
+    if u:
+        cedula = cedula.strip()
+        cambio_cedula = cedula != u.cedula
+        u.cedula = cedula
+        # No dejamos que el admin se quite a sí mismo el rol de administrador.
+        if not (u.id == actor.id and rol is not Rol.administrador):
+            u.rol = rol
+        if reiniciar or cambio_cedula:
+            u.hashed_password = hash_password(cedula)
+        session.add(u)
+        session.commit()
+    return _redir_usuarios("Usuario actualizado.")
 
 
 @router.post("/usuarios/{usuario_id}/toggle")

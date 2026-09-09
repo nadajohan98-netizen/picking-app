@@ -1,0 +1,65 @@
+{% extends "app.html" %}
+{% block title %}Cierre del día{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block topctx %}<span class="ctx">·</span><a href="/supervisor" class="crumb">Supervisión</a><span class="ctx">/</span><span class="ctx">Cierre</span>{% endblock %}
+
+{% block appmain %}
+<div class="wrap-wide">
+  <div class="page-head print-hide" style="padding:0 0 12px">
+    <div class="titles"><h1>Cierre del día</h1><div class="sub">Vista para imprimir o guardar</div></div>
+    <span class="sp"></span>
+    <div class="actions"><button class="btn primary" onclick="window.print()">Imprimir</button></div>
+  </div>
+
+  <div class="cierre">
+    <h1>Cierre de picking</h1>
+    <div class="meta">Fecha: {{ resumen.fecha }} · Generado: {{ generado }} · Supervisor: {{ user.username }}</div>
+
+    <h2>Cumplimiento por puesto</h2>
+    <table class="tbl">
+      <thead><tr>
+        <th>Puesto</th><th>Operario</th><th class="r">Pedido</th><th class="r">Despachado</th>
+        <th class="r">Pendiente</th><th class="r">% Cumpl.</th><th class="r">Unidades</th>
+      </tr></thead>
+      <tbody>
+        {% for p in resumen.puestos %}
+        <tr class="{{ 'fila-alerta' if (not p.kpis.cumple_objetivo and p.kpis.total_pedido > 0) else '' }}">
+          <td class="mono">{{ "%02d"|format(p.numero) }}</td>
+          <td>{{ p.ocupado_por or "—" }}</td>
+          <td class="r mono">{{ p.kpis.total_pedido }}</td>
+          <td class="r mono">{{ p.kpis.total_despachado }}</td>
+          <td class="r mono">{{ p.kpis.total_pendiente }}</td>
+          <td class="r mono">{{ p.kpis.pct_cumplimiento if p.kpis.total_pedido > 0 else "—" }}{{ " %" if p.kpis.total_pedido > 0 else "" }}</td>
+          <td class="r mono">{{ p.kpis.total_unidades }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h2>Vencimientos a priorizar</h2>
+    {% if resumen.alertas %}
+    <table class="tbl">
+      <thead><tr><th>Puesto</th><th>Material</th><th>Lote</th><th>Vence</th><th>Estado</th></tr></thead>
+      <tbody>
+        {% for a in resumen.alertas %}
+        <tr class="fila-{{ a.estado }}">
+          <td class="mono">{{ "%02d"|format(a.puesto) }}</td>
+          <td>{{ a.material }}</td>
+          <td class="mono">{{ a.lote or "—" }}</td>
+          <td class="mono">{{ a.vence }}</td>
+          <td>{{ "Vencido" if a.estado == "vencido" else "Por vencer" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p class="muted">Sin vencimientos próximos.</p>
+    {% endif %}
+
+    <div class="firma">
+      <div>Supervisor</div>
+      <div>Recibido en bodega</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
