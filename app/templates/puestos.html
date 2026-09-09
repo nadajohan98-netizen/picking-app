@@ -1,0 +1,34 @@
+{% extends "app.html" %}
+{% block title %}Elegir puesto — App de Picking{% endblock %}
+{% block body_class %}app-body{% endblock %}
+
+{% block appmain %}
+<div class="wrap">
+  <div class="page-head" style="padding:0 0 14px">
+    <div class="titles">
+      <h1>Elegí un puesto</h1>
+      <div class="sub">Un puesto ocupado se libera solo cuando la otra persona lo cierra o cierra sesión. Se actualiza en vivo.</div>
+    </div>
+  </div>
+
+  <div class="puestos" id="puestos-grid">
+    {% for p in puestos %}
+      <a class="puesto" data-puesto="{{ p.id }}" href="/picking/{{ p.id }}">
+        <span class="pnum">{{ "%02d"|format(p.numero) }}</span>
+        <span class="pst"><span class="d"></span><span class="pst-txt">Libre</span></span>
+        <span class="pw">&nbsp;</span>
+      </a>
+    {% else %}
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="es-title">No hay puestos configurados</div>
+        Pedile al administrador que los cargue.
+      </div>
+    {% endfor %}
+  </div>
+</div>
+<script>window.USUARIO_ID = {{ user.id }};</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/puestos.js') }}"></script>
+{% endblock %}

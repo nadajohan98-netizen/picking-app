@@ -1,0 +1,44 @@
+{% extends "app.html" %}
+{% block title %}Asignación diaria{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block topctx %}<span class="ctx">·</span><a href="/admin" class="crumb">Administración</a><span class="ctx">/</span><span class="ctx">Asignación diaria</span>{% endblock %}
+
+{% block appmain %}
+<div class="wrap-wide">
+  <div class="page-head" style="padding:0 0 12px">
+    <div class="titles"><h1>Asignación diaria de almacenes</h1></div>
+  </div>
+
+  <form method="get" action="/admin/asignaciones" class="row-form">
+    <div class="fld">
+      <label class="lbl">Fecha</label>
+      <input type="date" name="fecha" value="{{ fecha }}" onchange="this.form.submit()">
+    </div>
+  </form>
+
+  <form method="post" action="/admin/asignaciones/guardar">
+    <input type="hidden" name="fecha" value="{{ fecha }}">
+    <div class="table-wrap">
+      <table class="tbl tabla-matriz">
+        <thead>
+          <tr>
+            <th>Puesto</th>
+            {% for a in almacenes %}<th>{{ a.codigo }}<br><small class="muted">{{ a.nombre }}</small></th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in puestos %}
+          <tr>
+            <td class="mono">{{ "%02d"|format(p.numero) }}</td>
+            {% for a in almacenes %}
+            <td><input type="checkbox" name="asg-{{ p.id }}-{{ a.id }}" {{ "checked" if a.id in actuales.get(p.id, []) else "" }}></td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <button class="btn primary" type="submit" style="margin-top:14px">Guardar asignación del {{ fecha }}</button>
+  </form>
+</div>
+{% endblock %}

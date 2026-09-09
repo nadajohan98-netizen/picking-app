@@ -1,0 +1,40 @@
+{% extends "app.html" %}
+{% block title %}Catálogo de lotes{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block topctx %}<span class="ctx">·</span><a href="/admin" class="crumb">Administración</a><span class="ctx">/</span><span class="ctx">Lotes</span>{% endblock %}
+
+{% block appmain %}
+<div class="wrap">
+  <div class="page-head" style="padding:0 0 12px">
+    <div class="titles"><h1>Catálogo de lotes</h1></div>
+  </div>
+  {% if msg %}<p class="ok">{{ msg }}</p>{% endif %}
+
+  <form method="post" action="/admin/lotes/cargar" enctype="multipart/form-data" class="row-form">
+    <div class="fld">
+      <label class="lbl">Cargar archivo (.xlsx o .csv)</label>
+      <input type="file" name="archivo" accept=".xlsx,.csv" required>
+    </div>
+    <button class="btn primary" type="submit">Cargar</button>
+  </form>
+  <p class="muted small">Debe tener una columna <code>lote</code> o <code>codigo</code> (si no, se usa la primera). Los que ya existan no se duplican.</p>
+
+  <div class="table-wrap" style="margin-top:12px">
+    <table class="tbl">
+      <thead><tr><th>Código</th><th>Registrado</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        {% for l in lotes %}
+        <tr class="{{ '' if l.activo else 'fila-inactiva' }}">
+          <td class="mono">{{ l.codigo }}</td>
+          <td>{{ l.fecha_registro }}</td>
+          <td>{{ "Activo" if l.activo else "Inactivo" }}</td>
+          <td><form method="post" action="/admin/lotes/{{ l.id }}/toggle"><button class="btn ghost sm" type="submit">{{ "Desactivar" if l.activo else "Activar" }}</button></form></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4"><div class="empty-state"><div class="es-title">Todavía no hay lotes cargados</div>Subí un archivo con los lotes válidos para empezar.</div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

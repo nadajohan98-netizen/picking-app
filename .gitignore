@@ -1,0 +1,21 @@
+# Entorno virtual de Python
+.venv/
+
+# Base de datos SQLite (se genera con: py manage.py reset)
+*.db
+*.db-journal
+
+# Clave secreta de las cookies de sesión (se genera sola al arrancar)
+.secret_key
+
+# Cachés de Python
+__pycache__/
+*.pyc
+
+# Editores
+.vscode/
+.idea/
+
+# Logs y temporales de desarrollo
+server*.log
+scratch_*.py

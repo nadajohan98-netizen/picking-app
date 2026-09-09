@@ -1,0 +1,62 @@
+{% extends "app.html" %}
+{% block title %}Configuración{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block topctx %}<span class="ctx">·</span><a href="/admin" class="crumb">Administración</a><span class="ctx">/</span><span class="ctx">Configuración</span>{% endblock %}
+
+{% block appmain %}
+<div class="wrap-wide">
+  <form method="post" action="/admin/config/guardar">
+    <div class="page-head" style="padding:0 0 14px">
+      <div class="titles">
+        <h1>Configuración</h1>
+        <div class="sub">aplica a todos los puestos al instante</div>
+      </div>
+      <span class="sp"></span>
+      <div class="actions"><button class="btn primary" type="submit">Guardar</button></div>
+    </div>
+    {% if msg %}<p class="ok" style="margin:0 0 12px">{{ msg }}</p>{% endif %}
+
+    <div class="cfg">
+      <div class="cfgcard wide">
+        <h3>Formato del código de barras</h3>
+        <div class="d">De qué parte del código sale el peso. El material y el lote se eligen a mano en la grilla; el código solo trae el peso.</div>
+        <div class="bcbuild">
+          <div class="bcseg"><div class="n">{{ cfg.bc_prefijo or "—" }}</div><div class="t">Prefijo</div></div>
+          <div class="bcseg wt"><div class="n">{{ "0" * cfg.bc_peso_digitos }}</div><div class="t">Peso · {{ cfg.bc_peso_inicio }}–{{ cfg.bc_peso_inicio + cfg.bc_peso_digitos - 1 }}</div></div>
+        </div>
+        <div class="crow"><div class="k">Longitud del código</div><input name="bc_longitud" value="{{ cfg.bc_longitud }}"></div>
+        <div class="crow"><div class="k">Prefijo esperado <small>vacío = cualquiera</small></div><input name="bc_prefijo" value="{{ cfg.bc_prefijo }}"></div>
+        <div class="crow"><div class="k">Peso: primera posición <small>1 = primer dígito</small></div><input name="bc_peso_inicio" value="{{ cfg.bc_peso_inicio }}"></div>
+        <div class="crow"><div class="k">Peso: cantidad de dígitos</div><input name="bc_peso_digitos" value="{{ cfg.bc_peso_digitos }}"></div>
+        <div class="crow"><div class="k">Divisor para pasar a kg <small>1000 = el código trae gramos</small></div><input name="bc_peso_divisor" value="{{ cfg.bc_peso_divisor }}"></div>
+        <div class="cfgprev">Ejemplo con este formato: al leer <span class="mono">{{ cfg.bc_prefijo }}30045{{ "8425".ljust(cfg.bc_peso_digitos, "0") }}…</span> el peso sería <span class="mono" style="color:var(--accent)">8,425 kg</span> (va a la casilla que tengas seleccionada).</div>
+      </div>
+
+      <div class="cfgcard">
+        <h3>Tolerancia de despacho</h3>
+        <div class="d">Cuánto se puede pasar de lo pedido antes de que la app rechace.</div>
+        <div class="crow"><div class="k">Margen permitido por línea (%)</div><input name="tolerancia_pct" value="{{ cfg.tolerancia_pct }}"></div>
+      </div>
+
+      <div class="cfgcard">
+        <h3>Vencimientos</h3>
+        <div class="d">Rango válido para la fecha y cuándo empezar a alertar.</div>
+        <div class="crow"><div class="k">Máx. días hacia adelante</div><input name="venc_max_dias" value="{{ cfg.venc_max_dias }}"></div>
+        <div class="crow"><div class="k">Alertar faltando (días)</div><input name="venc_alerta_dias" value="{{ cfg.venc_alerta_dias }}"></div>
+      </div>
+
+      <div class="cfgcard">
+        <h3>Meta de cumplimiento</h3>
+        <div class="d">Debajo de esto, el puesto se marca en rojo en Supervisión.</div>
+        <div class="crow"><div class="k">Cumplimiento objetivo (%)</div><input name="cumplimiento_objetivo" value="{{ cfg.cumplimiento_objetivo }}"></div>
+      </div>
+
+      <div class="cfgcard">
+        <h3>Sesión de puesto</h3>
+        <div class="d">Minutos de inactividad antes de liberar un puesto.</div>
+        <div class="crow"><div class="k">Liberar tras (min)</div><input name="sesion_timeout_min" value="{{ cfg.sesion_timeout_min }}"></div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

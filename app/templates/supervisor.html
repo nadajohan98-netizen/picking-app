@@ -1,0 +1,39 @@
+{% extends "app.html" %}
+{% block title %}Panel de supervisor{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block topctx %}<span class="ctx">·</span><span class="ctx">Supervisión</span>{% endblock %}
+
+{% block appmain %}
+<div class="wrap-wide">
+  <div class="page-head" style="padding:0 0 14px">
+    <div class="titles">
+      <h1>Supervisión</h1>
+      <div class="sub">{{ resumen.fecha }} · se actualiza sola cada 15 segundos</div>
+    </div>
+  </div>
+
+  <div class="panels">
+    <div class="panel">
+      <h3>Puestos activos <span class="live">en vivo</span></h3>
+      <div class="table-wrap">
+        <table class="tbl" id="tabla-puestos">
+          <thead><tr>
+            <th>Pto</th><th>Operario</th><th>Cumplimiento</th>
+            <th class="r">Pedido</th><th class="r">Despachado</th><th class="r">Pendiente</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Vencimientos a priorizar</h3>
+      <div id="alertas"></div>
+    </div>
+  </div>
+</div>
+<script>window.RESUMEN_INICIAL = {{ resumen | tojson }};</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/supervisor.js') }}"></script>
+{% endblock %}

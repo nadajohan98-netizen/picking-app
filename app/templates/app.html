@@ -1,0 +1,20 @@
+{# Chrome común de las pantallas internas: barra superior + contenido. #}
+{% extends "base.html" %}
+
+{% block body %}
+<header class="topbar">
+  <a class="brand" href="/inicio" style="text-decoration:none;color:inherit"><span class="xi">P</span>Picking</a>
+  {% block topctx %}{% endblock %}
+  <div class="right">
+    {% if user %}<span class="who">{{ user.username }} · {{ user.rol.value }}</span>{% endif %}
+    <select class="theme-sel" id="theme-sel" title="Tema" aria-label="Tema">
+      <option value="auto">Tema: automático</option>
+      <option value="light">Tema: claro</option>
+      <option value="dark">Tema: oscuro</option>
+    </select>
+    <a href="/logout" class="ghost">Salir</a>
+  </div>
+</header>
+
+{% block appmain %}{% endblock %}
+{% endblock %}

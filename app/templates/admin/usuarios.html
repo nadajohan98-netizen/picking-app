@@ -1,0 +1,41 @@
+{% extends "app.html" %}
+{% block title %}Usuarios{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block topctx %}<span class="ctx">·</span><a href="/admin" class="crumb">Administración</a><span class="ctx">/</span><span class="ctx">Usuarios</span>{% endblock %}
+
+{% block appmain %}
+<div class="wrap">
+  <div class="page-head" style="padding:0 0 12px">
+    <div class="titles"><h1>Usuarios</h1></div>
+  </div>
+  {% if msg %}<p class="ok">{{ msg }}</p>{% endif %}
+
+  <form method="post" action="/admin/usuarios/crear" class="row-form">
+    <div class="fld"><label class="lbl">Usuario</label><input name="username" required></div>
+    <div class="fld"><label class="lbl">Cédula</label><input name="cedula" required></div>
+    <div class="fld"><label class="lbl">Rol</label>
+      <select name="rol">{% for r in roles %}<option value="{{ r.value }}">{{ r.value }}</option>{% endfor %}</select>
+    </div>
+    <button class="btn primary" type="submit">Crear</button>
+  </form>
+  <p class="muted small">La contraseña inicial es la cédula.</p>
+
+  <div class="table-wrap" style="margin-top:12px">
+    <table class="tbl">
+      <thead><tr><th>Usuario</th><th>Cédula</th><th>Rol</th><th>Estado</th><th colspan="2"></th></tr></thead>
+      <tbody>
+        {% for u in usuarios %}
+        <tr class="{{ '' if u.activo else 'fila-inactiva' }}">
+          <td class="mono">{{ u.username }}</td>
+          <td>{{ u.cedula }}</td>
+          <td>{{ u.rol.value }}</td>
+          <td>{{ "Activo" if u.activo else "Inactivo" }}</td>
+          <td><form method="post" action="/admin/usuarios/{{ u.id }}/toggle"><button class="btn ghost sm" type="submit" {{ "disabled" if u.id == user.id else "" }}>{{ "Desactivar" if u.activo else "Activar" }}</button></form></td>
+          <td><form method="post" action="/admin/usuarios/{{ u.id }}/reset"><button class="btn ghost sm" type="submit">Reiniciar contraseña</button></form></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

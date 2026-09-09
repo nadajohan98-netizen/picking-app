@@ -1,0 +1,66 @@
+{% extends "app.html" %}
+{% block title %}Puesto {{ "%02d"|format(puesto.numero) }} — Picking{% endblock %}
+{% block body_class %}app-body{% endblock %}
+
+{% block topctx %}
+<span class="ctx">·</span>
+<a href="/puestos" class="crumb">Puestos</a>
+<span class="ctx">/</span>
+<span class="ctx">Puesto {{ "%02d"|format(puesto.numero) }}</span>
+{% endblock %}
+
+{% block appmain %}
+<div class="page">
+  <div class="page-head">
+    <div class="titles">
+      <h1>Puesto {{ "%02d"|format(puesto.numero) }}</h1>
+      <div class="sub">
+        Almacenes de hoy:
+        {% if almacenes %}{% for a in almacenes %}{{ a.codigo }}{% if not loop.last %} · {% endif %}{% endfor %}{% else %}ninguno asignado{% endif %}
+      </div>
+    </div>
+    <span class="sp"></span>
+    <div class="actions">
+      <button class="btn ghost" id="btn-cerrar">Cerrar puesto</button>
+    </div>
+  </div>
+
+  <div class="kpibar" id="kpibar"></div>
+
+  <div class="sheettools">
+    <span class="search"><input id="buscar" placeholder="Buscar almacén, material o lote…" autocomplete="off"></span>
+    {% for a in almacenes %}<button class="fchip" data-alm="{{ a.codigo }}">{{ a.codigo }}</button>{% endfor %}
+    <button class="fchip" data-pend="1">Pendientes</button>
+    <span class="sp"></span>
+    <div class="weightpad">
+      <label for="bc">Peso del código</label>
+      <input id="bc" inputmode="numeric" placeholder="…08425…" autocomplete="off">
+      <span class="out" id="bc-out">—</span>
+    </div>
+  </div>
+
+  <div class="aviso" id="aviso" hidden></div>
+
+  <div class="gridzone">
+    <div id="grid"></div>
+    <div class="loading-mask" id="loading-mask"><div class="spinner"></div></div>
+  </div>
+  <div class="gridnote">
+    Casillas de piqueo: clic para escribir el peso de una canastilla ·
+    <kbd>Enter</kbd> confirma y avanza · <kbd>Esc</kbd> cancela ·
+    <kbd>↑</kbd> <kbd>↓</kbd> cambian de fila · <kbd>Retroceso</kbd> en casilla vacía borra la anterior.
+    Cada cambio se guarda solo.
+  </div>
+</div>
+
+<script>
+  window.PUESTO_ID = {{ puesto.id }};
+  window.USUARIO_ID = {{ user.id }};
+  window.HOY_ISO = "{{ hoy }}";
+</script>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='vendor/tabulator.min.js') }}"></script>
+<script src="{{ url_for('static', path='js/picking.js') }}"></script>
+{% endblock %}

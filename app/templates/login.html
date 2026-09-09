@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Iniciar sesión — App de Picking{% endblock %}
+{% block body_class %}app-body{% endblock %}
+
+{% block body %}
+<div class="centerpane">
+  <form class="card" method="post" action="/login">
+    <div class="brandline"><span class="xi">P</span>App de Picking</div>
+    <p class="muted small">Inicia sesión para continuar</p>
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+    <div class="stack">
+      <div class="fld">
+        <label class="lbl" for="username">Usuario</label>
+        <input id="username" name="username" type="text" autocomplete="username" autofocus required>
+      </div>
+      <div class="fld">
+        <label class="lbl" for="password">Contraseña</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn primary" type="submit">Entrar</button>
+    </div>
+    <div class="hint">Contraseña inicial = número de cédula</div>
+  </form>
+</div>
+{% endblock %}

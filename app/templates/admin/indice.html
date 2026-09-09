@@ -1,0 +1,35 @@
+{% extends "app.html" %}
+{% block title %}Administración{% endblock %}
+{% block body_class %}app-body{% endblock %}
+{% block topctx %}<span class="ctx">·</span><span class="ctx">Administración</span>{% endblock %}
+
+{% block appmain %}
+<div class="wrap">
+  <div class="page-head" style="padding:0 0 14px">
+    <div class="titles"><h1>Administración</h1></div>
+  </div>
+
+  <div class="cards-row">
+    <a class="link-card" href="/admin/config">
+      <h3>Configuración</h3>
+      <p class="muted small">Reglas del negocio: código de barras, tolerancia, vencimientos, cumplimiento.</p>
+    </a>
+    <a class="link-card" href="/admin/lotes">
+      <h3>Catálogo de lotes</h3>
+      <p class="muted small">Cargar lotes válidos desde Excel/CSV y activarlos o desactivarlos.</p>
+    </a>
+    <a class="link-card" href="/admin/asignaciones">
+      <h3>Asignación diaria</h3>
+      <p class="muted small">Qué almacenes le corresponden a cada puesto, por fecha.</p>
+    </a>
+    <a class="link-card" href="/admin/usuarios">
+      <h3>Usuarios</h3>
+      <p class="muted small">Crear usuarios, activar/desactivar y reiniciar contraseñas.</p>
+    </a>
+  </div>
+
+  <p class="muted small" style="margin-top:22px">
+    Como administrador también entrás al <a href="/supervisor">panel de supervisor</a> y a <a href="/puestos">los puestos</a>.
+  </p>
+</div>
+{% endblock %}
