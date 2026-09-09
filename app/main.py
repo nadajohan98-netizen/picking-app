@@ -33,7 +33,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="App de Picking", lifespan=lifespan)
 
 # Cookie de sesión firmada.
-app.add_middleware(SessionMiddleware, secret_key=get_secret_key())
+# max_age=None -> la cookie dura solo mientras el navegador esté abierto: al
+# cerrarlo (fin de turno en un PC compartido) el siguiente entra desde el login.
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=get_secret_key(),
+    max_age=None,
+    same_site="lax",
+)
 
 # Archivos estáticos (CSS, JS, Tabulator).
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
